@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sibu.xinweishang.api.dao.UserDao">
+	<!-- 插入主库中 -->
+	<insert id="addUser" parameterType="User" keyProperty="id">
+		insert
+		into user(state,nickname) values(#{state},#{nickname})
+	</insert>
+
+	<!-- 插入分布式的数据库中 -->
+	<insert id="addTableUser" parameterType="map">
+		insert into
+		`user_${tablename}` (user_id,state,nickname) values(${user_id},
+		${state}, ${nickname})
+	</insert>
+
+	<!-- 为了返回list 类型而定义的returnMap -->
+	<resultMap type="User" id="resultListUser">
+		<id column="id" property="id" />
+		<result column="state" property="state" />
+		<result column="nickname" property="nickname" />
+	</resultMap>
+	
+	<resultMap type="com.sibu.xinweishang.api.model.User" id="resultListTUser">
+		<id column="id" property="id" />
+		<result column="username" property="username" />
+		<result column="password" property="password" />
+	</resultMap>
+	
+	<!-- 查询用户列表 -->
+	<select id="selectUsers" parameterType="string" resultMap="resultListUser">
+		select * from user
+	</select>
+
+	<!-- 查询某个用户信息 -->
+	<select id="getUser" parameterType="Integer" resultType="User">
+		select *
+		from user where id = #{id}
+	</select>
+	<select id="getTableUser" parameterType="map" resultType="User">
+		select
+		* from `user_${tablename}` where user_id = #{user_id}
+	</select>
+
+	<!-- 更新用户信息 -->
+	<update id="updateUser" parameterType="User">
+		update user set
+		state=#{state},nickname=#{nickname} where id=#{id}
+	</update>
+
+	<!-- 删除用户信息 -->
+	<delete id="deleteUser" parameterType="Integer">
+		delete from user where id
+		= #{id}
+	</delete>
+
+	<resultMap id="tUserMap" type="com.sibu.xinweishang.api.model.User">
+		<id property="id" column="id" />
+		<result property="username" column="username" />
+		<result property="password" column="password" />
+	</resultMap>
+	<sql id="select-base-01">
+		SELECT
+		u.id,
+		u.username,
+		FROM
+		t_user as u
+		WHERE
+	</sql>
+
+	<select id="findUserByUsername" parameterType="string"
+		resultMap="tUserMap">
+		SELECT u.id,u.username,u.password FROM t_user as u WHERE u.username = #{username}
+	</select>
+	
+	
+	<!-- <select id="findPermissionByRoleIds" resultMap="BaseResultMap">
+	 SELECT distinct permissionname
+	 <include refid="Base_Column_List" />
+	 FROM t_permission where role_id in
+	 <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+	  #{roles}
+	 </foreach>
+	</select> -->
+</mapper>
